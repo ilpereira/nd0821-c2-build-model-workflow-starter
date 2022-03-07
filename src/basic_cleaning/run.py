@@ -6,13 +6,20 @@ import argparse
 import logging
 import wandb
 import pandas as pd
+from argparse import Namespace
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
 
-def go(args):
+def go(args: Namespace):
+    """
+    Runs a basic data cleaning on the input dataset fetched from W&B.
+
+    Args:
+        args (Namespace): variable containing the component's input parameters as specified in MLproject
+    """
 
     run = wandb.init(job_type="basic_cleaning")
     run.config.update(args)
@@ -93,7 +100,6 @@ if __name__ == "__main__":
              "be dropped from the data",
         required=True
     )
-
 
     args = parser.parse_args()
 

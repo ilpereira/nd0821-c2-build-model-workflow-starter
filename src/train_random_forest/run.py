@@ -7,6 +7,7 @@ import logging
 import os
 import shutil
 import matplotlib.pyplot as plt
+from argparse import Namespace
 
 import mlflow
 import json
@@ -40,7 +41,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
 
-def go(args):
+def go(args: Namespace):
+    """
+    Builds and trains the inference pipeline, uploading it to W&B as an MLflow serialized model.
+
+    Args:
+        args (Namespace): variable containing the component's input parameters as specified in MLproject
+    """
 
     run = wandb.init(job_type="train_random_forest")
     run.config.update(args)
@@ -56,6 +63,8 @@ def go(args):
     ######################################
     # Use run.use_artifact(...).file() to get the train and validation artifact (args.trainval_artifact)
     # and save the returned path in train_local_pat
+
+    # Fetch the train and validation artifact from W&B
     trainval_local_path = run.use_artifact(args.trainval_artifact).file()
     ######################################
 
@@ -68,8 +77,8 @@ def go(args):
         X, y, test_size=args.val_size, stratify=X[args.stratify_by], random_state=args.random_seed
     )
 
+    # Build inference pipeline
     logger.info("Preparing sklearn pipeline")
-
     sk_pipe, processed_features = get_inference_pipeline(rf_config, args.max_tfidf_features)
 
     # Then fit it to the X_train, y_train data
